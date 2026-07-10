@@ -8,7 +8,6 @@ jobs:
     runs-on: windows-latest
 
     steps:
-      # 1. 强制 Git 使用 LF 换行符，防止文件 hash 改变导致的 lockfile 校验失败
       - name: Configure Git Line Endings
         run: |
           git config --global core.autocrlf false
@@ -17,7 +16,6 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
-      # 2. 不指定 pnpm 版本，让系统自动读取 package.json 中的 packageManager 字段
       - name: Install pnpm
         uses: pnpm/action-setup@v3
 
@@ -27,17 +25,24 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
-      # 3. 标准安装，这会严格遵守 pnpm-lock.yaml，不会触发意外的包升级
       - name: Install Dependencies
         run: pnpm install
 
-      # 关键修改：运行 package 命令进行打包，而不是 build
+      # 1. 第一步：先构建代码，生成 main.js 和渲染进程文件
+      - name: Build Application
+        run: pnpm run build
+
+      # 2. 第二步：执行打包，生成 exe 安装包
       - name: Package Application
         run: pnpm run package
 
+      # 3. 第三步：上传产物
+      # 考虑到 electron-builder 有时会输出到 dist 或 release，使用通配符更保险
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
           name: CS-Demo-Manager-Windows
-          # electron-builder 通常会将输出放在 release 文件夹
-          path: release/*.exe
+          path: |
+            release/*.exe
+            dist/*.exe
+            **/*.exe
