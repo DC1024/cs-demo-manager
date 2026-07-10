@@ -8,13 +8,18 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      # 1. 强制 Git 使用 LF 换行符，防止文件 hash 改变导致的 lockfile 校验失败
+      - name: Configure Git Line Endings
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      # 2. 不指定 pnpm 版本，让系统自动读取 package.json 中的 packageManager 字段
       - name: Install pnpm
         uses: pnpm/action-setup@v3
-        with:
-          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -22,6 +27,7 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
+      # 3. 标准安装，这会严格遵守 pnpm-lock.yaml，不会触发意外的包升级
       - name: Install Dependencies
         run: pnpm install
 
