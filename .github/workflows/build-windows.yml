@@ -34,7 +34,7 @@ jobs:
 
       # 2. 第二步：执行打包，生成 exe 安装包
       - name: Package Application
-        run: pnpm run package
+        run: pnpm run package --publish never
 
       # 3. 第三步：上传产物
       # 考虑到 electron-builder 有时会输出到 dist 或 release，使用通配符更保险
