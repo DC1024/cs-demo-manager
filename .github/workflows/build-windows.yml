@@ -31,13 +31,13 @@ jobs:
       - name: Install Dependencies
         run: pnpm install
 
-      - name: Build Application
-        run: pnpm run build
+      # 关键修改：运行 package 命令进行打包，而不是 build
+      - name: Package Application
+        run: pnpm run package
 
       - name: Upload Windows Executable
         uses: actions/upload-artifact@v4
         with:
           name: CS-Demo-Manager-Windows
-          path: |
-            release/*.exe
-            dist/*.exe
+          # electron-builder 通常会将输出放在 release 文件夹
+          path: release/*.exe
