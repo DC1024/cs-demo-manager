@@ -1,0 +1,46 @@
+name: Build Windows App
+
+# 触发条件：支持手动点击运行，也可以取消注释 push 让每次提交自动构建
+on:
+  workflow_dispatch: 
+  # push:
+  #   branches: [ main, master ]
+
+jobs:
+  build:
+    # 指定使用 GitHub 提供的最新 Windows 运行环境
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install Dependencies
+        run: pnpm install
+
+      - name: Build Application
+        run: pnpm run build
+        # 如果 electron-builder 报错需要 GitHub Token，可以取消下面两行的注释
+        # env:
+        #   GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Windows Executable
+        uses: actions/upload-artifact@v4
+        with:
+          name: CS-Demo-Manager-Windows
+          # electron-builder 通常会将打包好的文件输出到 release 或 dist 目录
+          # 这里使用通配符抓取所有的 .exe 安装包
+          path: |
+            release/*.exe
+            dist/*.exe
